@@ -15,8 +15,8 @@ describe('POST /api/tickets', () => {
         title: 'API 설계 문서 작성',
         description: 'REST API 엔드포인트와 요청/응답 형식을 정의한다',
         priority: 'HIGH',
-        plannedStartDate: '2026-02-10',
-        dueDate: '2026-02-15',
+        plannedStartDate: '2099-01-10',
+        dueDate: '2099-01-15',
       }),
     );
     const body = await response.json();
@@ -27,8 +27,8 @@ describe('POST /api/tickets', () => {
       description: 'REST API 엔드포인트와 요청/응답 형식을 정의한다',
       status: 'BACKLOG',
       priority: 'HIGH',
-      plannedStartDate: '2026-02-10',
-      dueDate: '2026-02-15',
+      plannedStartDate: '2099-01-10',
+      dueDate: '2099-01-15',
       startedAt: null,
       completedAt: null,
     });
