@@ -21,3 +21,6 @@ npm-debug.log*
 next-env.d.ts
 .env.local
 .env.test
+
+# claude code (개인 설정)
+.claude/settings.local.json

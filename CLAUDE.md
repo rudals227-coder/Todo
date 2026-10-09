@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **`notes/` 디렉토리는 사용자의 개인 작업 노트입니다. 어떤 방법(Read, Grep, Glob, Bash 등)으로도 읽거나 검색하거나 수정하지 마세요.**
+
 ## 프로젝트 상태
 
 **아직 애플리케이션 코드가 존재하지 않습니다.** 이 저장소에는 현재 `docs/` 디렉토리만 있으며, 1인 사용자용 칸반 TODO 앱 "Tika"의 전체 스펙 문서 세트입니다. `package.json`도 없고, git 저장소도 초기화되지 않았으며, 소스 트리도 없습니다. 첫 구현 작업은 아래 설명된 Next.js 프로젝트를 스캐폴딩하고 TRD에 따른 디렉토리 구조를 구축하는 것이며, 그 이후에 기능 구현이 가능합니다.
