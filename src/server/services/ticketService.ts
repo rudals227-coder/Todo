@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
-import { db } from '../db';
-import { tickets } from '../db/schema';
-import type { CreateTicketInput } from '../../shared/validations/ticket';
+import { db } from '@/server/db';
+import { tickets } from '@/server/db/schema';
+import type { CreateTicketInput } from '@/shared/validations/ticket';
 
 export async function createTicket(input: CreateTicketInput) {
   const [{ minPosition }] = await db

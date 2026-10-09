@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createTicketSchema } from '../../../src/shared/validations/ticket';
-import { createTicket } from '../../../src/server/services/ticketService';
+import { createTicketSchema } from '@/shared/validations/ticket';
+import { createTicket } from '@/server/services/ticketService';
 
 export async function POST(request: Request) {
   const body = await request.json();
