@@ -287,4 +287,9 @@ TEST_CASES.md
 ## ◈ SDD 워크플로
 - Spec Kit 명령어를 활용해서 명세확인 → 계획수립 → 작업분해 → 구현실행 사이클을 반복한다.
 - 작은 단위의 커밋을 실행하여, 깃에 Push
-- 
+- 새 디렉터리를 생상허며 초기화 하는 경우 : specify init my-project --ai claude
+- 위 명령어는 바뀜
+- specify init --here --integration claude
+
+
+## ◈ 깃허브 사용

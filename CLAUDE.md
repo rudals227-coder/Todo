@@ -6,9 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 상태
 
-**아직 애플리케이션 코드가 존재하지 않습니다.** 이 저장소에는 현재 `docs/` 디렉토리만 있으며, 1인 사용자용 칸반 TODO 앱 "Tika"의 전체 스펙 문서 세트입니다. `package.json`도 없고, git 저장소도 초기화되지 않았으며, 소스 트리도 없습니다. 첫 구현 작업은 아래 설명된 Next.js 프로젝트를 스캐폴딩하고 TRD에 따른 디렉토리 구조를 구축하는 것이며, 그 이후에 기능 구현이 가능합니다.
+1인 사용자용 칸반 TODO 앱 "Tika". Next.js 15 프로젝트가 TRD §3 구조대로 스캐폴딩되어 있으며(`app/` 루트 + `src/server|client|shared`), 루트/보드 레이아웃과 placeholder 보드 페이지, 티켓 생성 API(`POST /api/tickets`)까지 구현되어 있습니다. 나머지 엔드포인트와 프론트엔드 컴포넌트는 TDD 사이클로 구현할 예정입니다.
 
-아직 코드가 없으므로 검증된 빌드/린트/테스트 명령어는 없습니다. 프로젝트가 스캐폴딩되면(아래 스택대로 Next.js + Jest), 일반적으로 `npm run dev`, `npm run build`, `npm run lint`, 단일 테스트 파일 실행 시 `npm test` / `npm test -- <경로>` 형태가 될 것입니다 — 다만 이는 추측이므로 `package.json`이 생기면 실제 스크립트명을 확인해야 합니다.
+주요 명령어 (`package.json` 기준, WSL 안에서 실행):
+
+- `npm run dev` / `npm run build` / `npm run lint`
+- `npm test` (전체), `npm test -- <경로>` (단일 파일) — Jest가 backend(node)/frontend(jsdom) 프로젝트로 분리됨
+- `npm run format` / `npm run format:check` — Prettier
+- `npm run db:generate` / `db:migrate` / `db:push` / `db:seed` — Drizzle
 
 ## 참조 우선순위 (Source of truth)
 
