@@ -1,21 +1,24 @@
 <!--
 Sync Impact Report
 ==================
-Version change: (template, unversioned) → 1.0.0
-Bump rationale: 최초 비준(initial ratification) — 템플릿 placeholder를 구체 원칙으로 대체
+Version change: 1.0.0 → 1.1.0
+Bump rationale: MINOR — 새 섹션(가드레일) 추가. 기존 원칙의 삭제·재정의 없음
 
-Modified principles:
-  - [PRINCIPLE_1_NAME] → I. TypeScript Strict 모드 (NON-NEGOTIABLE)
-  - [PRINCIPLE_2_NAME] → II. API 계약 준수
-  - [PRINCIPLE_3_NAME] → III. 통일된 에러 응답
-  - [PRINCIPLE_4_NAME] → IV. Zod로 모든 요청 검증
-  - [PRINCIPLE_5_NAME] → V. 비즈니스 로직은 서비스 계층에
+Modified principles: 없음 (I~V 그대로)
 
 Added sections:
-  - 추가 제약 (Technical Constraints)
-  - 개발 워크플로 & 품질 게이트
+  - 가드레일 (절대 준수사항) — DB/Git/패키지/파일 시스템 금지 명령, DB 안전 규칙,
+    테스트 DB 예외, 안전 작업 원칙
+
+Modified sections:
+  - Governance — "준수 점검"에 절대 금지 항목은 Complexity Tracking·사용자 승인으로도
+    예외를 둘 수 없다는 문장 추가 (가드레일 섹션 서문과 일치시키기 위함)
 
 Removed sections: 없음
+
+Existing code check:
+  - __tests__/ 에 TRUNCATE·DELETE 등 DB 정리 코드 없음 → 마이그레이션 불필요
+  - package.json 의 db:push 스크립트는 유지 (실행 시 사용자 확인 대상으로만 분류)
 
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ 변경 불필요 (Constitution Check는 런타임에 이 파일을 읽음)
@@ -118,6 +121,67 @@ NOTE: 이 주석은 개정 검토용 임시 자료이며, 커밋 전에 삭제�
 - **완료 조건(Quality Gates)**: `npm test`, `npx tsc --noEmit`, `npm run lint`가 모두 통과해야
   작업을 완료로 본다.
 
+## 가드레일 (절대 준수사항)
+
+AI 코딩 에이전트가 위험한 작업을 수행하지 않도록 명시적으로 금지하는 규칙이다.
+
+- **절대 금지** 항목은 어떤 상황에서도 위반할 수 없다(MUST NOT). 사용자 요청이나 plan의 Complexity
+  Tracking으로도 예외를 둘 수 없다.
+- **사용자 확인 필요** 항목은 실행 전에 무엇을 왜 하는지 설명하고, 사용자의 명시적 승인을 받은 뒤에만
+  실행한다(MUST).
+
+### 데이터베이스 금지 명령
+
+- `DROP TABLE`, `DROP DATABASE` — 절대 금지
+- `TRUNCATE` — 절대 금지 (예외: 아래 "테스트 DB 예외" 참고)
+- `DELETE FROM` (`WHERE` 절 없이) — 절대 금지
+- `ALTER TABLE ... DROP COLUMN` — 사용자 명시적 허가 필요
+- `npm run db:push` — 칼럼·데이터 손실 가능성이 있으므로 사용자 확인 필요.
+  스키마 변경은 `npm run db:generate` → `npm run db:migrate`를 기본으로 한다.
+
+### 데이터베이스 안전 규칙
+
+- 삭제·리셋 작업은 MUST 사용자 승인을 요청한다.
+- 삭제 전에 백업 또는 복구 방법을 안내한다.
+- 테스트 데이터가 있을 때는 DB 리셋 대신 필요한 SQL로 해결한다.
+- 운영 DB는 자동으로 변경하지 않는다 — 절대 금지
+
+### 테스트 DB 예외
+
+- 개발·테스트 중 데이터 정리가 필요하면 `tika_test` DB에 한해, 테스트 정리 목적의 데이터 삭제를
+  허용한다.
+- `tika_dev` 및 운영 DB에는 이 예외를 적용하지 않는다.
+
+### Git 금지 명령
+
+- `git push --force` — 절대 금지
+- `git reset --hard` — 절대 금지
+- `git branch -D` (main/master 대상) — 절대 금지
+- `git clean -fd` — 사용자 확인 필요
+
+### 패키지 관리 금지 명령
+
+- `npm audit fix --force` — 절대 금지
+- 메이저 버전 자동 업그레이드 — 절대 금지
+- `rm -rf node_modules && npm install` — 사용자 확인 필요
+
+### 파일 시스템 금지 명령
+
+- `rm -rf /` 또는 루트 경로 삭제 — 절대 금지
+- 프로젝트 외부 파일 수정 — 절대 금지
+- `src/` 디렉터리 전체 삭제 — 절대 금지
+- `.env` 계열 파일 삭제 — 사용자 확인 필요
+
+### 안전 작업 원칙
+
+- 파괴적 작업(삭제, 초기화) 전에는 MUST 사용자 확인을 받는다.
+- 복구 불가능한 작업은 백업 방법을 먼저 안내한다.
+- 자동화된 스크립트에서 파괴적 명령을 실행하지 않는다(MUST NOT).
+- 의심스러운 작업은 실행 전에 사용자에게 설명하고 확인을 받는다.
+
+**Rationale**: 데이터 손실, 이력 손실, 의존성 파손처럼 되돌리기 어려운 사고를 에이전트가 단독으로
+일으키지 않도록, 위험 명령을 "절대 금지"와 "확인 후 실행" 두 등급으로 명확히 나눈다.
+
 ## Governance
 
 - 이 constitution은 프로젝트의 다른 모든 관행·가이드보다 우선한다. 충돌 시 이 문서를 따른다.
@@ -129,6 +193,7 @@ NOTE: 이 주석은 개정 검토용 임시 자료이며, 커밋 전에 삭제�
   - PATCH: 문구 명확화, 오타 수정 등 의미 변화 없는 수정
 - **준수 점검**: `/speckit-plan`의 Constitution Check와 `/speckit-analyze`에서 모든 원칙 준수 여부를
   확인한다. 원칙 위반이 불가피하면 plan의 Complexity Tracking에 사유를 기록하고 사용자 승인을 받는다.
+  단, "가드레일"의 절대 금지 항목은 이 절차로도 예외를 둘 수 없다.
 - 일상적인 개발 가이드(명령어, 디렉토리 구조, 도메인 규칙 세부)는 `CLAUDE.md`를 참고한다.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-10 | **Last Amended**: 2026-10-10
+**Version**: 1.1.0 | **Ratified**: 2026-10-10 | **Last Amended**: 2026-10-10
