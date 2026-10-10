@@ -1,0 +1,15 @@
+# 개인 노트 — 어떤 도구로도 읽지 않는다 (CLAUDE.md)
+notes/
+
+# 임시 작업물
+temp/
+
+# 도구가 관리하는 파일
+.claude/
+.specify/
+
+# drizzle-kit 자동 생성 (마이그레이션 SQL, meta 스냅샷)
+drizzle/
+
+# 문서는 사람이 관리한다 (한글 표 정렬 유지)
+*.md
