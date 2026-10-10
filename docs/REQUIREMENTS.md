@@ -20,12 +20,12 @@
 | description | string | X | 최대 1000자 | null |
 | priority | enum | X | LOW, MEDIUM, HIGH | MEDIUM |
 | plannedStartDate | date | X | - | null |
-| dueDate | date | X | 오늘 이후 날짜 | null |
+| dueDate | date | X | 오늘(Asia/Seoul) 이후 날짜, 오늘 포함 | null |
 
 **처리 규칙**:
 - 생성 시 status는 항상 BACKLOG
 - 생성 시 position은 해당 칼럼의 최솟값 - 1024 (맨 위 배치)
-- 칼럼에 티켓이 없을 경우 position = 0
+- 칼럼에 티켓이 없을 경우 0을 기준으로 삼아 position = -1024
 - createdAt, updatedAt 자동 설정
 
 **검증 에러 메시지**:
@@ -37,6 +37,8 @@
 | 설명 1000자 초과 | "설명은 1000자 이내로 입력해주세요" |
 | 잘못된 우선순위 값 | "우선순위는 LOW, MEDIUM, HIGH 중 선택해주세요" |
 | 과거 종료예정일 | "종료예정일은 오늘 이후 날짜를 선택해주세요" |
+| 시작예정일 형식 오류 | "시작예정일 형식이 올바르지 않습니다" |
+| 종료예정일 형식 오류 | "종료예정일 형식이 올바르지 않습니다" |
 
 **성공 응답**: 201 Created + 생성된 티켓 전체 데이터
 **실패 응답**: 400 Bad Request + 검증 에러 상세
@@ -141,7 +143,7 @@
 |------|------|------|
 | ticketId | number | 이동할 티켓 ID |
 | status | enum | 이동 대상 칼럼 (BACKLOG, TODO, IN_PROGRESS) |
-| position | number | 칼럼 내 새 위치 |
+| position | number | 대상 칼럼 내 자리 인덱스 (0부터, 이동 티켓 제외). 실제 position 값은 서버가 계산 |
 
 > DONE은 허용하지 않는다. Done으로의 이동은 `PATCH /api/tickets/:id/complete` (FR-005)를 사용한다.
 
@@ -150,19 +152,23 @@
 - 트랜잭션으로 원자성 보장
 
 **position 재계산 로직**:
-- 두 카드 사이에 삽입할 때: `(prev + next) / 2`로 계산
-- 간격이 1 미만이면: 해당 칼럼 전체를 1024 간격으로 재정렬
+- 빈 칼럼: 0
+- 두 카드 사이에 삽입할 때: `floor((prev + next) / 2)`로 계산
+- 사이에 정수가 없으면(간격 < 2): 해당 칼럼 전체를 1024 간격으로 재정렬
 - 맨 앞 삽입: 첫 번째 카드의 position - 1024
 - 맨 뒤 삽입: 마지막 카드의 position + 1024
 
-**비즈니스 로직**:
+**비즈니스 로직** (상태가 바뀔 때만):
 - TODO로 이동 시: startedAt = 현재 시각
-- TODO에서 BACKLOG로 이동 시: startedAt = null
+- BACKLOG로 이동 시 (어느 칼럼에서든): startedAt = null
+- DONE에서 다른 칼럼으로 이동 시: completedAt = null
 
 **검증 에러 메시지**:
 | 조건 | 메시지 |
 |------|--------|
-| 잘못된 status | "상태는 BACKLOG, TODO, IN_PROGRESS 중 선택해주세요" |
+| 잘못된 status (DONE 포함) | "상태는 BACKLOG, TODO, IN_PROGRESS 중 선택해주세요" |
+| ticketId 누락·양의 정수 아님 | "티켓 ID가 올바르지 않습니다" |
+| position 누락·음수·정수 아님 | "위치 값이 올바르지 않습니다" |
 | 존재하지 않는 티켓 | "티켓을 찾을 수 없습니다" |
 
 **성공 응답**: 200 OK + 업데이트된 티켓 목록

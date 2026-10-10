@@ -46,6 +46,12 @@
 | 001-9 | 과거 종료예정일 | `{ title: "ok", dueDate: "2020-01-01" }` | 400, "종료예정일은 오늘 이후 날짜를 선택해주세요" |
 | 001-10 | position 자동 할당 | 연속 2개 생성 | 나중 생성 티켓의 position이 더 작음 (맨 위 배치) |
 | 001-11 | startedAt/completedAt 초기값 | 정상 생성 | startedAt=null, completedAt=null |
+| 001-12 | 시작예정일 형식 오류 | `{ title: "ok", plannedStartDate: "2026-13-45" }` | 400, "시작예정일 형식이 올바르지 않습니다" |
+| 001-13 | 종료예정일 형식 오류 | `{ title: "ok", dueDate: "내일" }` | 400, "종료예정일 형식이 올바르지 않습니다" |
+| 001-14 | 빈 Backlog 첫 티켓 position | Backlog가 비어 있는 상태에서 `{ title: "첫 티켓" }` | 201, position=-1024 |
+| 001-15 | 한국 시간 기준 "오늘" | 현재 시각 UTC 2026-03-10T15:30 (KST 03-11 00:30)에서 `dueDate: "2026-03-11"` / `"2026-03-10"` | 03-11은 허용, 03-10은 400 "종료예정일은 오늘 이후 날짜를 선택해주세요" |
+| 001-16 | 파싱 불가·비객체 본문 | `not-json`, `null`, `[]`, `"hello"` | 400, "제목을 입력해주세요" |
+| 001-17 | 시스템 필드 무시 | `{ title: "ok", status: "DONE", position: 5, startedAt, completedAt }` | 201, status=BACKLOG, startedAt=null, completedAt=null, position≠5 |
 
 ---
 
@@ -53,7 +59,7 @@
 
 | ID | 시나리오 | 조건 | 기대 결과 |
 |----|----------|------|-----------|
-| 002-1 | 빈 보드 조회 | 티켓 없음 | 200, 4개 빈 배열 (BACKLOG, TODO, IN_PROGRESS, DONE) |
+| 002-1 | 보드 응답 구조 | 정상 조회 | 200, 4개 칼럼 키(BACKLOG, TODO, IN_PROGRESS, DONE)가 항상 배열로 존재 (테이블 전체 삭제는 가드레일상 금지이므로 "티켓 0개" 상태 대신 구조로 검증) |
 | 002-2 | 데이터 있는 보드 | 여러 상태의 티켓 존재 | 200, 상태별 그룹화 |
 | 002-3 | 칼럼 내 정렬 | 같은 칼럼에 여러 티켓 | position 오름차순 정렬 |
 | 002-4 | total 필드 | 여러 티켓 존재 | total = 표시되는 전체 티켓 수 |
@@ -70,7 +76,7 @@
 |----|----------|------|-----------|
 | 003-1 | 존재하는 티켓 | 유효한 id | 200, 티켓 전체 데이터 (모든 필드 포함) |
 | 003-2 | 없는 티켓 | 존재하지 않는 id | 404, "티켓을 찾을 수 없습니다" |
-| 003-3 | 잘못된 id 형식 | `"abc"` | 400, VALIDATION_ERROR |
+| 003-3 | 잘못된 id 형식 | `"abc"` | 400, VALIDATION_ERROR, "티켓 ID가 올바르지 않습니다" |
 | 003-4 | isOverdue 포함 | 정상 조회 | isOverdue 파생 필드 포함 |
 
 ---
@@ -128,6 +134,10 @@
 | 007-10 | 잘못된 status | `{ status: "INVALID" }` | 400, "상태는 BACKLOG, TODO, IN_PROGRESS 중 선택해주세요" |
 | 007-11 | 없는 티켓 이동 | 존재하지 않는 ticketId | 404, "티켓을 찾을 수 없습니다" |
 | 007-12 | updatedAt 갱신 | 정상 이동 | updatedAt 변경 확인 |
+| 007-13 | IN_PROGRESS에서 BACKLOG로 | IN_PROGRESS → BACKLOG | startedAt = null |
+| 007-14 | 간격 부족 시 재정렬 | position 10, 11인 두 카드 사이(인덱스 1)에 삽입 | 칼럼이 0, 1024, 2048로 재정렬, affected에 두 카드 포함 |
+| 007-15 | 빈 칼럼으로 이동 | 대상 칼럼에 카드 없음 | position = 0, affected = [] |
+| 007-16 | 잘못된 ticketId·position | `{ ticketId: "x" }` / `{ position: -1 }` | 400, "티켓 ID가 올바르지 않습니다" / "위치 값이 올바르지 않습니다" |
 
 ---
 

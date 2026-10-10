@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Tika** — 1인 사용자용 칸반 TODO 앱. 고정 4칼럼(Backlog / TODO / In Progress / Done) 보드에서 티켓을 드래그앤드롭으로 관리합니다. 인증 없음, 단일 사용자.
 
-**현재 상태**: Next.js 15 스캐폴딩, 루트/보드 레이아웃(placeholder 페이지), 티켓 생성 API(`POST /api/tickets`, FR-001), `tickets` 테이블 마이그레이션(`drizzle/0000_*.sql`)까지 완료. FR-001은 SDD 도입 이전에 TDD로 구현되어 `specs/` 산출물이 없습니다. 나머지 기능은 SDD로 진행합니다.
+**현재 상태**: Next.js 15 스캐폴딩, 루트/보드 레이아웃(placeholder 페이지), 티켓 생성 API(`POST /api/tickets`, FR-001), `tickets` 테이블 마이그레이션(`drizzle/0000_*.sql`)까지 완료. FR-001은 SDD 도입 이전에 TDD로 구현되었고, 이후 `specs/001-create-ticket/`으로 소급 명세·보정되었습니다(공용 에러 처리 `src/server/middleware/`, Asia/Seoul 날짜 검증 포함). 나머지 기능은 SDD로 진행합니다.
 
 ### 디렉토리 구조
 
@@ -111,7 +111,7 @@ notes/                    사용자 개인 노트 — 접근 금지
 
 ### 도메인 규칙 (실수하기 쉬운 부분)
 - **날짜 필드 구분**: `plannedStartDate`/`dueDate`는 사용자 입력 `DATE`. `startedAt`/`completedAt`은 시스템 관리 `TIMESTAMP`로 사용자가 직접 수정할 수 없고 상태 전이의 부수효과로만 설정됨
-- **상태 전이** (`PATCH /api/tickets/reorder`): `TODO`로 이동 시 `startedAt = now()`, `TODO → BACKLOG` 시 `startedAt` 초기화, `DONE`에서 벗어나면 `completedAt` 초기화. `DONE`으로 이동은 별도 엔드포인트 `PATCH /api/tickets/:id/complete`이며, `reorder`는 `status: DONE`을 명시적으로 거부
+- **상태 전이** (`PATCH /api/tickets/reorder`): `TODO`로 이동 시 `startedAt = now()`, `BACKLOG`로 이동 시(어느 칼럼에서든) `startedAt` 초기화, `DONE`에서 벗어나면 `completedAt` 초기화. `DONE`으로 이동은 별도 엔드포인트 `PATCH /api/tickets/:id/complete`이며, `reorder`는 `status: DONE`을 명시적으로 거부
 - **position**: 중간값 삽입 `(prev+next)/2`, 간격이 1 미만이면 해당 칼럼을 1024 간격으로 재정렬
 - **isOverdue** (`dueDate < 오늘 && status !== DONE`): 조회 시 계산하는 파생 필드, 절대 저장하지 않음
 - **Done 칼럼**: `completedAt` 기준 24시간 이내만 반환 — 클라이언트가 아니라 보드 조회 API에서 서버 측 필터
